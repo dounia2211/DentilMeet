@@ -32,8 +32,8 @@ PHP + MySQL REST API for the Dentilmeet application.
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/your-org/dentilmeet-backend.git
-cd dentilmeet-backend
+git clone https://github.com/dounia2211/DentilMeet
+cd DentilMeet
 ```
 
 ### 2. Install PHP dependencies
@@ -59,7 +59,7 @@ JWT_EXPIRY_DAYS=7
 - Open phpMyAdmin
 - Create a database named `dentilmeet`
 - Import / run the patient table SQL (your team already has this)
-- Run `add_username_column.sql` to add the username column
+
 
 ### 5. Test the API
 Open Postman and send:
@@ -68,7 +68,7 @@ POST http://localhost/signup/index.php/api/auth/signup
 Content-Type: application/json
 
 {
-  "username": "testuser",
+  "full_name": "test user",
   "email": "test@email.com",
   "password": "password123",
   "phone": "0555123456"
@@ -104,8 +104,8 @@ $patient = AuthMiddleware::handle();
 ```json
 {
   "errors": [
-    "Le nom d'utilisateur est requis.",
-    "L'adresse email est invalide."
+    "The full name is required.",
+    "The email adress is invalid."
   ]
 }
 ```
@@ -118,7 +118,7 @@ $patient = AuthMiddleware::handle();
   "token": "eyJ0eXAiOiJKV1Q...",
   "patient": {
     "id_patient": 1,
-    "username": "testuser",
+    "full_name": "test user",
     "email": "test@email.com",
     "phone": "0555123456"
   }
