@@ -65,4 +65,92 @@ class validateMiddleware{
         return $errors; // empty array = all good, filled array = stop and send errors
     }
 
+    public static function validateLogin($data) {
+        $errors = [];
+
+        if (empty(trim($data['email'] ?? ''))) {
+            $errors[] = "Email address is required.";
+        } elseif (!filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "The email address is invalid.";
+        }
+
+        if (empty($data['password'] ?? '')) {
+            $errors[] = "Password is required.";
+        }
+
+        return $errors;
+    }
+
+    public static function validateBooking($data) {
+        $errors = [];
+ 
+        // ── id_dentist ───────────────────────────────────────────────
+        // Must be present and must be a number greater than 0
+        // empty() catches null, "", 0, "0" — all invalid for an ID
+        if (empty($data['id_dentist'])) {
+            $errors[] = 'Dentist is required.';
+ 
+        // is_numeric() checks it is actually a number, not random text
+        } elseif (!is_numeric($data['id_dentist'])) {
+            $errors[] = 'Dentist ID must be a number.';
+        }
+ 
+        // ── appointment_date ─────────────────────────────────────────
+        // Must be present and must match YYYY-MM-DD format
+        // React should send it as: "2026-03-20"
+        if (empty($data['appointment_date'])) {
+            $errors[] = 'Appointment date is required.';
+ 
+        // preg_match checks exact format: 4 digits - 2 digits - 2 digits
+        } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['appointment_date'])) {
+            $errors[] = 'Date format must be YYYY-MM-DD (example: 2026-03-20).';
+        }
+ 
+        // ── appointment_time ─────────────────────────────────────────
+        // Must be present and must be one of the valid time slots
+        // that match exactly what your TIMES array in React has
+        if (empty($data['appointment_time'])) {
+            $errors[] = 'Appointment time is required.';
+        } else {
+            // These must match your frontend TIMES array EXACTLY
+            // including spacing and AM/PM format
+            $validTimes = [
+                '9:00 AM',  '9:30 AM',
+                '10:00 AM', '10:30 AM',
+                '11:00 AM', '11:30 AM',
+                '12:00 PM', '12:30 PM',
+                '1:00 PM',  '1:30 PM',
+                '2:00 PM',  '2:30 PM'
+            ];
+ 
+            // in_array() checks if the sent time exists in the valid list
+            if (!in_array($data['appointment_time'], $validTimes)) {
+                $errors[] = 'Invalid time slot selected.';
+            }
+        }
+ 
+        // ── service_type ─────────────────────────────────────────────
+        // Must be one of the 3 visit types shown in your frontend:
+        //   Check-up, Cleaning, Emergency
+        // These match exactly your visitTypes array in Booking.jsx
+        if (empty(trim($data['service_type'] ?? ''))) {
+            $errors[] = 'Visit type is required.';
+        } else {
+            $validServices = ['Check-up', 'Cleaning', 'Emergency'];
+            if (!in_array($data['service_type'], $validServices)) {
+                $errors[] = 'Visit type must be Check-up, Cleaning or Emergency.';
+            }
+        }
+ 
+        // ── reason ───────────────────────────────────────────────────
+        // Reason is optional — patient might not type anything in the textarea
+        // But if they do, it must not be too long
+        if (!empty($data['reason']) && strlen($data['reason']) > 500) {
+            $errors[] = 'Reason must not exceed 500 characters.';
+        }
+ 
+        return $errors; // [] = all good, [...] = stop and return errors
+    }
+
+
 }
