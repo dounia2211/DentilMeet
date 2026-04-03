@@ -47,4 +47,26 @@ class AuthController {
         http_response_code($result['code']);
         echo json_encode($result['body']);
     }
+
+    public function login() {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Invalid or empty request body']);
+            return;
+        }
+
+        $errors = ValidateMiddleware::validateLogin($data);
+
+        if (!empty($errors)) {
+            http_response_code(400);
+            echo json_encode(['errors' => $errors]);
+            return;
+        }
+
+        $result = $this->authService->login($data);
+        http_response_code($result['code']);
+        echo json_encode($result['body']);
+    }
 }
