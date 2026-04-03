@@ -81,4 +81,51 @@ class AuthService {
             ]
         ];
     }
+
+    //LOGIN
+    public function login($data) {
+        $email    = strtolower(trim($data['email']));
+        $password = $data['password'];
+
+        // Step 1: Find patient by email
+        $patient = $this->patientModel->findByEmail($email);
+        if (!$patient) {
+            return [
+                'code' => 401,
+                'body' => ['message' => 'Invalid email or password.']
+            ];
+        }
+
+        // Step 2: Check if account is suspended
+        if ($patient['is_suspended']) {
+            return [
+                'code' => 403,
+                'body' => ['message' => 'Your account has been suspended.']
+            ];
+        }
+
+        // Step 3: Verify password
+        if (!password_verify($password, $patient['password'])) {
+            return [
+                'code' => 401,
+                'body' => ['message' => 'Invalid email or password.']
+            ];
+        }
+
+        // Step 4: Generate JWT token
+        $token = TokenUtil::generate($patient['id_patient'], $patient['email']);
+
+        // Step 5: Return success
+        return [
+            'code' => 200,
+            'body' => [
+                'message' => 'Login successful.',
+                'token'   => $token,
+                'patient' => [
+                    'id_patient' => (int) $patient['id_patient'],
+                    'email'      => $patient['email']
+                ]
+            ]
+        ];
+    }
 }
