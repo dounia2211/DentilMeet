@@ -46,6 +46,11 @@ require_once 'models/paymentModel.php';
 require_once 'service/paymentService.php';
 require_once 'controllers/paymentController.php';
 
+//Dentists
+require_once 'models/dentistModel.php';
+require_once 'service/dentistService.php';
+require_once 'controllers/dentistController';
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -175,7 +180,37 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $controller = new PaymentController($pdo);
     $controller->getReceipt($patient);
 
+//Dentists
+//GET /api/dentists/suggestions
+} elseif ($uri === '/api/dentists/suggestions' && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->getSuggestions();
 
+// GET /api/dentists/search?q=chen&page=1   
+} elseif ($uri === '/api/dentists/search' && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->search();
+
+// GET /api/dentists/filter?speciality=Orthodontie&page=1
+} elseif ($uri === '/api/dentists/filter' && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->filter();
+
+// GET /api/dentists/specialities   
+} elseif ($uri === '/api/dentists/specialities' && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->getSpecialities();
+    
+// GET /api/dentists/:id
+} elseif (preg_match('#^/api/dentists/(\d+)$#', $uri, $m) && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->getOne($m[1]);
+
+// GET /api/dentists?page=1   
+} elseif ($uri === '/api/dentists' && $method === 'GET') {
+    $controller = new DentistController($pdo);
+    $controller->getAll();
+    
 } else {
     http_response_code(404);
     echo json_encode(['message' => 'Route not found.']);
