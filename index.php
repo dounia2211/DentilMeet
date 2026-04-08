@@ -21,6 +21,11 @@ require_once 'models/patientModels.php';
 require_once 'service/authService.php';
 require_once 'controllers/authController.php';
 
+// ── Dashboard
+require_once 'models/dashboardModel.php';
+require_once 'service/dashboardService.php';
+require_once 'controllers/dashboardController.php';
+
 // ── Appointments 
 require_once 'models/appointmentModel.php';
 require_once 'service/appointmentService.php';
@@ -75,7 +80,13 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
 }elseif ($uri === '/api/auth/login' && $method === 'POST') {
     $controller = new AuthController($pdo);
     $controller->login(); 
-
+//  DASHBOARD 
+//  GET /api/dashboard
+} elseif ($uri === '/api/dashboard' && $method === 'GET') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new DashboardController($pdo);
+    $controller->getDashboard($patient);
+    
 //  APPOINTMENTS
 // GET /api/appointments/booked-days?id_dentist=1&year=2026&month=4
 } elseif ($uri === '/api/appointments/booked-days' && $method === 'GET') {
