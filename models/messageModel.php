@@ -22,8 +22,9 @@ class MessageModel {
                 (sender_id, sender_type, receiver_id, message_text, sent_at, is_read, id_appointment)
             VALUES (?, ?, ?, ?, NOW(), 0, ?)
         ");
-        $stmt->execute([$senderId, $senderType, $receiverId, $content, $appointmentId]);
-        return $this->pdo->lastInsertId();
+        $success = $stmt->execute([$senderId, $senderType, $receiverId, $content, $appointmentId]);
+        if ($success) {
+        return (int) $this->pdo->lastInsertId(); 
     }
 
     // ── getConversation() ─────────────────────────────────────────────
