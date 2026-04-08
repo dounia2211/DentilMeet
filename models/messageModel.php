@@ -26,7 +26,8 @@ class MessageModel {
         if ($success) {
         return (int) $this->pdo->lastInsertId(); 
     }
-
+    return false; 
+}
     // ── getConversation() ─────────────────────────────────────────────
     // Tous les messages entre un patient et un dentiste (les deux sens)
     public function getConversation(int $patientId, int $dentistId): array {
