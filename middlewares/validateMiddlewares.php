@@ -148,7 +148,116 @@ class validateMiddleware{
         if (!empty($data['reason']) && strlen($data['reason']) > 500) {
             $errors[] = 'Reason must not exceed 500 characters.';
         }
+
+         // FAVORITES
+         public static function validateFavorite($data) {
+        $errors = [];
  
+        // id_dentist est obligatoire pour add et remove
+        if (empty($data['id_dentist'])) {
+            $errors[] = 'Dentist ID is required.';
+        } elseif (!is_numeric($data['id_dentist']) || (int)$data['id_dentist'] <= 0) {
+            $errors[] = 'Dentist ID must be a valid number.';
+        }
+ 
+        return $errors;
+    }
+ 
+        // REVIEWS (RATINGS)
+          public static function validateReview($data) {
+        $errors = [];
+ 
+        // ── id_dentist ────────────────────────────────────────────────────
+        if (empty($data['id_dentist'])) {
+            $errors[] = 'Dentist ID is required.';
+        } elseif (!is_numeric($data['id_dentist']) || (int)$data['id_dentist'] <= 0) {
+            $errors[] = 'Dentist ID must be a valid number.';
+        }
+ 
+        // ── id_appointment ────────────────────────────────────────────────
+        // Obligatoire car UNIQUE KEY (id_patient, id_appointment) dans votre SQL
+        if (empty($data['id_appointment'])) {
+            $errors[] = 'Appointment ID is required.';
+        } elseif (!is_numeric($data['id_appointment']) || (int)$data['id_appointment'] <= 0) {
+            $errors[] = 'Appointment ID must be a valid number.';
+        }
+ 
+        // ── rating ────────────────────────────────────────────────────────
+        // Doit être un entier entre 1 et 5
+        if (!isset($data['rating']) || $data['rating'] === '') {
+            $errors[] = 'Rating is required.';
+        } elseif (!is_numeric($data['rating']) || (int)$data['rating'] < 1 || (int)$data['rating'] > 5) {
+            $errors[] = 'Rating must be a number between 1 and 5.';
+        }
+ 
+        // ── comment (optionnel) ───────────────────────────────────────────
+        if (!empty($data['comment']) && strlen($data['comment']) > 1000) {
+            $errors[] = 'Comment must not exceed 1000 characters.';
+        }
+ 
+        return $errors;
+    }
+    
+        // MESSAGES
+        public static function validateMessage($data) {
+        $errors = [];
+ 
+        // ── id_dentist ────────────────────────────────────────────────────
+        if (empty($data['id_dentist'])) {
+            $errors[] = 'Dentist ID is required.';
+        } elseif (!is_numeric($data['id_dentist']) || (int)$data['id_dentist'] <= 0) {
+            $errors[] = 'Dentist ID must be a valid number.';
+        }
+ 
+        // ── message_text ──────────────────────────────────────────────────
+        if (empty(trim($data['message_text'] ?? ''))) {
+            $errors[] = 'Message text is required.';
+        } elseif (strlen(trim($data['message_text'])) > 2000) {
+            $errors[] = 'Message must not exceed 2000 characters.';
+        }
+ 
+        // ── id_appointment (optionnel) ────────────────────────────────────
+        // Nullable dans votre SQL — le patient peut envoyer un message
+        // sans forcément le lier à un appointment
+        if (!empty($data['id_appointment']) && !is_numeric($data['id_appointment'])) {
+            $errors[] = 'Appointment ID must be a valid number.';
+        }
+ 
+            return $errors;
+       }
+
+        // PAYMENTS
+        public static function validatePayment($data) {
+        $errors = [];
+ 
+        // ── id_appointment ────────────────────────────────────────────────
+        // Obligatoire car payment est lié à un appointment dans votre SQL
+        if (empty($data['id_appointment'])) {
+            $errors[] = 'Appointment ID is required.';
+        } elseif (!is_numeric($data['id_appointment']) || (int)$data['id_appointment'] <= 0) {
+            $errors[] = 'Appointment ID must be a valid number.';
+        }
+ 
+        // ── amount ────────────────────────────────────────────────────────
+        if (!isset($data['amount']) || $data['amount'] === '') {
+            $errors[] = 'Amount is required.';
+        } elseif (!is_numeric($data['amount']) || (float)$data['amount'] <= 0) {
+            $errors[] = 'Amount must be a positive number.';
+        }
+ 
+        // ── method_payment ────────────────────────────────────────────────
+        // Doit correspondre exactement à votre ENUM SQL :
+        // 'especes' | 'carte' | 'virement'
+        if (empty($data['method_payment'])) {
+            $errors[] = 'Payment method is required.';
+        } else {
+            $validMethods = ['especes', 'carte', 'virement'];
+            if (!in_array($data['method_payment'], $validMethods)) {
+                $errors[] = 'Payment method must be: especes, carte or virement.';
+            }
+        }
+
+        
         return $errors; // [] = all good, [...] = stop and return errors
     }
 
