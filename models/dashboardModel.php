@@ -93,7 +93,8 @@ class DashboardModel {
     // Colonnes review  : id_dentist, rating, is_reported
     // FRONT reçoit : suggestions[] → 4 cartes dentistes dans le dashboard
     //   id_dentist | full_name | speciality | photo | avg_rating
-    public function getSuggestions(int $limit = 4): array {
+       public function getSuggestions(int $limit = 4): array {
+        $limit = (int) $limit; // sécurité
         $stmt = $this->pdo->prepare("
             SELECT
                 d.id_dentist,
@@ -106,9 +107,9 @@ class DashboardModel {
                                AND r.is_reported = 0
             GROUP BY d.id_dentist
             ORDER BY avg_rating DESC
-            LIMIT ?
+            LIMIT $limit
         ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
