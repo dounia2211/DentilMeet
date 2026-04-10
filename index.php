@@ -54,7 +54,17 @@ require_once 'controllers/paymentController.php';
 //Dentists
 require_once 'models/dentistModel.php';
 require_once 'service/dentistService.php';
-require_once 'controllers/dentistController';
+require_once 'controllers/dentistController.php';
+
+//clinic
+require_once 'models/clinicModel.php';
+require_once 'service/clinicService.php';
+require_once 'controllers/clinicController.php';
+
+//notification
+require_once 'models/notificationModel.php';
+require_once 'service/notificationService.php';
+require_once 'controllers/notificationController.php';
 
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -221,6 +231,54 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
 } elseif ($uri === '/api/dentists' && $method === 'GET') {
     $controller = new DentistController($pdo);
     $controller->getAll();
+
+//clinic
+} elseif (preg_match('#^/api/clinics/(\d+)/dentists$#', $uri, $m) && $method==='GET'){
+    $controller = new clinicController($pdo);
+    $controller -> getDentists($m[1]);
+
+} elseif (preg_match('#^/api/clinics/(\d+)$#', $uri, $m ) && $method ==='GET'){
+    $controller = new clinicController($pdo);
+    $controller -> getOne($m[1]); 
+
+// NOTIFICATION ROUTES — all require token
+//order is critical
+
+// GET /api/notifications/unread-count
+// Used by: bell icon red dot on every page
+} elseif ($uri === '/api/notifications/unread-count' && $method === 'GET') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new NotificationController($pdo);
+    $controller->getUnreadCount($patient);
+
+// PUT /api/notifications/read-all
+// Used by: "Clear all" button 
+} elseif ($uri === '/api/notifications/read-all' && $method === 'PUT') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new NotificationController($pdo);
+    $controller->markAllAsRead($patient);
+    
+// PUT /api/notifications/:id/read
+// Used by: clicking on a single notification to mark it read   
+} elseif (preg_match('#^/api/notifications/(\d+)/read$#', $uri, $m) && $method === 'PUT') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new NotificationController($pdo);
+    $controller->markAsRead($patient, $m[1]); 
+
+// DELETE /api/notifications/:id
+// Used by: X button on a notification to delete it
+} elseif (preg_match('#^/api/notifications/(\d+)$#', $uri, $m) && $method === 'DELETE') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new NotificationController($pdo);
+    $controller->delete($patient, $m[1]);
+
+// GET /api/notifications
+// Used by: opening the notification panel
+// Must be LAST — most general notification route
+} elseif ($uri === '/api/notifications' && $method === 'GET') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new NotificationController($pdo);
+    $controller->getAll($patient);
     
 } else {
     http_response_code(404);
