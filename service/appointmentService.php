@@ -1,12 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../models/appointmentModel.php';
+require_once __DIR__ . '/../models/dentistModel.php';
+require_once __DIR__ . '/../service/notificationService.php';
 
 class appointmentService{
   private $appointmentModel;
+  private $dentistModel;
+  private $notificationService;
 
   public function __construct($pdo) {
     $this->appointmentModel = new appointmentModel ($pdo);
+    $this->dentistModel        = new dentistModel($pdo);
+    $this->notificationService = new notificationService($pdo);
   }
 
   //get all appointments for logged in patient // upcoming_count needs for dashboard page
@@ -99,6 +105,19 @@ class appointmentService{
       ];
     }
 
+    //Create notification after successful booking 
+    // Get the dentist name to include in the notification message
+    $dentist = $this->dentistModel->findById($id_dentist);
+   if ($dentist) {
+      $this->notificationService->createBookingNotification(
+        $id_patient,
+        $dentist['full_name'], // "Dr. Michael Chen"
+        $date,                 // "2026-04-06"
+        $timeForDB,            // "10:00:00"
+        $id_dentist
+      );
+    }
+
     //step6 return success
     return [
       'code' => 201,
@@ -114,6 +133,13 @@ class appointmentService{
 
   //cancel appointment
   public function cancel ($id_patient, $id_appointment){
+    // Get appointment details BEFORE cancelling
+    // so we can use the date in the notification message
+    $appointment = $this->appointmentModel->findById($id_appointment, $id_patient);
+
+    if (!$appointment) {
+      return ['code' => 404, 'body' => ['message' => 'Appointment not found or already cancelled.']];
+    }
     $updated = $this->appointmentModel->cancel($id_appointment, $id_patient);
 
     if(!$updated) {
@@ -122,6 +148,14 @@ class appointmentService{
         'body' => [ 'message' => 'Appointment not found or already cancelled.']
       ];
     }
+
+     //Create notification after cancellation ──────────────
+    $this->notificationService->createCancellationNotification(
+      $id_patient,
+      $appointment['appointment_date'],  // "2026-04-06"
+      $appointment['id_dentist'] ?? null
+    );
+    
     return [
       'code' => 200,
       'body' => ['message' => 'Appointment cancelled successfully.']
