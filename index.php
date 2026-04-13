@@ -66,6 +66,11 @@ require_once 'models/notificationModel.php';
 require_once 'service/notificationService.php';
 require_once 'controllers/notificationController.php';
 
+//dentistauth
+require_once __DIR__ . '/models/dentistauthModel.php';
+require_once __DIR__ . '/service/dentistauthService.php'; 
+require_once __DIR__ . '/controllers/dentistauthController.php';
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -279,6 +284,22 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $patient    = AuthMiddleware::handle();
     $controller = new NotificationController($pdo);
     $controller->getAll($patient);
+
+//  DENTIST AUTH ROUTES 
+ 
+// POST /api/dentist/auth/signup
+// Receives: multipart/form-data (has file uploads)
+// No token needed — dentist is not logged in yet
+} elseif ($uri === '/api/dentist/auth/signup' && $method === 'POST') {
+    $controller = new DentistAuthController($pdo);
+    $controller->signup();
+ 
+// POST /api/dentist/auth/login
+// No token needed — dentist is not logged in yet
+} elseif ($uri === '/api/dentist/auth/login' && $method === 'POST') {
+    $controller = new DentistAuthController($pdo);
+    $controller->login();
+
     
 } else {
     http_response_code(404);
