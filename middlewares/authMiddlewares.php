@@ -40,4 +40,27 @@ class AuthMiddleware { // protect future routes with the token
         // Example: $patient['id_patient'] gives the logged-in patient's ID
         return $decoded;
     }
-}
+ 
+       public static function handleDentist(): array {
+        $headers    = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+        if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
+            http_response_code(401);
+            echo json_encode(['message' => 'Token dentiste manquant.']);
+            exit;
+        }
+
+        $token   = substr($authHeader, 7);
+        $decoded = TokenUtil::verify($token);
+
+        if (!$decoded || !isset($decoded['id_dentist'])) {
+            http_response_code(401);
+            echo json_encode(['message' => 'Token dentiste invalide.']);
+            exit;
+        }
+
+        return $decoded;
+     }
+                      
+     }
