@@ -260,7 +260,53 @@ class validateMiddleware{
         
         return $errors; // [] = all good, [...] = stop and return errors
     }
+   // ── DENTIST — Clinic Status ────────────────────────────
+   public static function validateClinicStatus(array $data): array {
+    $errors = [];
+    $valid  = ['Available', 'Busy', 'Offline']; // Majuscule = cohérent avec le ENUM SQL
 
-
-
+    $status = trim($data['clinic_status'] ?? '');
+    if (empty($status)) {
+        $errors[] = 'clinic_status is required.';
+    } elseif (!in_array($status, $valid)) {
+        $errors[] = 'clinic_status must be: Available, Busy, or Offline.';
+    }
+    return $errors;
 }
+
+  // ── DENTIST — Calendar Query ───────────────────────────
+   public static function validateCalendarQuery(array $query): array {
+    $errors = [];
+    $year  = (int)($query['year']  ?? 0);
+    $month = (int)($query['month'] ?? 0);
+    if ($year < 2020 || $year > 2100) $errors[] = 'year must be between 2020 and 2100.';
+    if ($month < 1   || $month > 12)  $errors[] = 'month must be between 1 and 12.';
+    return $errors;
+}
+
+   // ── DENTIST — Appointment ID ───────────────────────────
+   public static function validateAppointmentId(int $id): array {
+    return $id <= 0 ? ['Invalid appointment id.'] : [];
+}
+
+   // ── DENTIST — Patient ID ───────────────────────────────
+   public static function validatePatientId(int $id): array {
+    return $id <= 0 ? ['Invalid patient id.'] : [];
+}
+
+  // ── Helper respond() ───────────────────────────────────
+   public static function respond(array $errors): bool {
+    if (!empty($errors)) {
+        http_response_code(422);
+        echo json_encode(['errors' => $errors]);
+        return false;
+    }
+    return true;
+}
+
+    
+}
+
+
+
+
