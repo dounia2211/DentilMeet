@@ -26,6 +26,11 @@ require_once 'models/dashboardModel.php';
 require_once 'service/dashboardService.php';
 require_once 'controllers/dashboardController.php';
 
+// Dentist dashboard 
+require_once 'models/DentistDashboardModel.php';
+require_once 'service/DentistDashboardService.php';
+require_once 'controllers/DentistDashboardController.php';
+
 // ── Appointments 
 require_once 'models/appointmentModel.php';
 require_once 'service/appointmentService.php';
@@ -50,6 +55,11 @@ require_once 'controllers/messageController.php';
 require_once 'models/paymentModel.php';
 require_once 'service/paymentService.php';
 require_once 'controllers/paymentController.php';
+
+// ── Profile
+require_once 'models/profileModel.php';
+require_once 'service/profileService.php';
+require_once 'controllers/profileController.php';
 
 //Dentists
 require_once 'models/dentistModel.php';
@@ -101,6 +111,60 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $patient    = AuthMiddleware::handle();
     $controller = new DashboardController($pdo);
     $controller->getDashboard($patient);
+
+//  DENTIST DASHBOARD 
+
+// GET /api/dentist/dashboard
+// Retourne TOUT en 1 appel :
+//   clinic_status, patients_seen_today, todays_patients, total_patients
+//   appointments[{name,time,live}]
+//   next_patient{full_name,age,gender,time,reason,visit_type,
+//                allergies,medical_notes,status,due_payment}
+//   requests[{name,type}]
+//   review{bars[{label,percent}], average, total}
+//   calendar{weeks[[{n,h,t,m}]], label, year, month}
+//   trends[{date,count}]
+//   unread_messages
+} elseif ($uri === '/api/dentist/dashboard' && $method === 'GET') {
+    $dentist    = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->getDashboard($dentist);
+
+// PUT /api/dentist/status
+// Body : { "clinic_status": "Available" | "Busy" | "Offline" }
+// StatCard isStatus → dropdown du design
+} elseif ($uri === '/api/dentist/status' && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->updateStatus($dentist);
+
+// PUT /api/dentist/appointments/{id}/accept
+// Icône ✓ dans AppointmentRequests
+} elseif (preg_match('#^/api/dentist/appointments/(\d+)/accept$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->acceptRequest($dentist, (int)$m[1]);
+
+// PUT /api/dentist/appointments/{id}/refuse
+// Icône ✗ dans AppointmentRequests
+} elseif (preg_match('#^/api/dentist/appointments/(\d+)/refuse$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->refuseRequest($dentist, (int)$m[1]);
+
+// PUT /api/dentist/appointments/{id}/start
+// Bouton "Start Consultation" dans NextPatient
+} elseif (preg_match('#^/api/dentist/appointments/(\d+)/start$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->startConsultation($dentist, (int)$m[1]);
+
+// GET /api/dentist/patients/{id_patient}
+// Bouton "view Details" dans NextPatient
+} elseif (preg_match('#^/api/dentist/patients/(\d+)$#', $uri, $m) && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->getPatientDetails($dentist, (int)$m[1]);
+
+// GET /api/dentist/calendar?year=2026&month=3
+// Boutons ← → pour changer de mois dans Calendar
+} elseif ($uri === '/api/dentist/calendar' && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistDashboardController($pdo))->getCalendar($dentist);
     
 //  APPOINTMENTS
 // GET /api/appointments/booked-days?id_dentist=1&year=2026&month=4
@@ -206,6 +270,19 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $controller = new PaymentController($pdo);
     $controller->getReceipt($patient);
 
+//  PROFILE
+// GET/api/profile 
+} elseif ($uri === '/api/profile' && $method === 'GET') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new ProfileController($pdo);
+    $controller->getProfile($patient);
+
+//POST/api/profile/photo
+} elseif ($uri === '/api/profile/photo' && $method === 'POST') {
+    $patient    = AuthMiddleware::handle();
+    $controller = new ProfileController($pdo);
+    $controller->uploadPhoto($patient);
+    
 //Dentists
 //GET /api/dentists/suggestions
 } elseif ($uri === '/api/dentists/suggestions' && $method === 'GET') {
