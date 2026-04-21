@@ -81,6 +81,11 @@ require_once __DIR__ . '/models/dentistauthModel.php';
 require_once __DIR__ . '/service/dentistauthService.php'; 
 require_once __DIR__ . '/controllers/dentistauthController.php';
 
+//dentistAppointment
+require_once __DIR__ . '/models/dentistAppointmentModel.php';
+require_once __DIR__ . '/service/DentistAppointmentService.php';
+require_once __DIR__ . '/controllers/DentistAppointmentController.php';
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -377,7 +382,42 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $controller = new DentistAuthController($pdo);
     $controller->login();
 
-    
+
+// DENTIST APPOINTMENTS PAGE — NEW ROUTES
+ 
+// GET /api/dentist/appointments/stats
+// Returns: new_appointments (021), total_this_month (91), revenue (18350 DA)
+// Called when: appointments page loads
+} elseif ($uri === '/api/dentist/appointments/stats' && $method === 'GET') {
+    $dentist    = AuthMiddleware::handleDentist();
+    $controller = new DentistAppointmentController($pdo);
+    $controller->getStats($dentist);
+ 
+// GET /api/dentist/appointments/:id/details
+// Returns: full appointment + patient info for the Details panel
+// Called when: dentist clicks "view Details" button
+} elseif (preg_match('#^/api/dentist/appointments/(\d+)/details$#', $uri, $m) && $method === 'GET') {
+    $dentist    = AuthMiddleware::handleDentist();
+    $controller = new DentistAppointmentController($pdo);
+    $controller->getDetails($dentist, $m[1]);
+
+ 
+// PUT /api/dentist/appointments/:id/price
+// Updates total_price for an appointment
+// Called when: dentist uses the / edit icon to set price
+} elseif (preg_match('#^/api/dentist/appointments/(\d+)/price$#', $uri, $m) && $method === 'PUT') {
+    $dentist    = AuthMiddleware::handleDentist();
+    $controller = new DentistAppointmentController($pdo);
+    $controller->updatePrice($dentist, $m[1]);
+ 
+// GET /api/dentist/appointments
+// Returns full appointments list with filters
+// Called when: page loads, search used, filter applied
+// MUST be last dentist appointment route
+} elseif ($uri === '/api/dentist/appointments' && $method === 'GET') {
+    $dentist    = AuthMiddleware::handleDentist();
+    $controller = new DentistAppointmentController($pdo);
+    $controller->getAll($dentist);
 } else {
     http_response_code(404);
     echo json_encode(['message' => 'Route not found.']);
