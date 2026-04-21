@@ -11,18 +11,16 @@ class TokenUtil {
     private static $algo   = "HS256";
 
     // Generate token after signup / login
-    public static function generate($id_patient, $email) {
+   public static function generate($payload) {
         $secret = $_ENV['JWT_SECRET'] ?? 'fallback_secret_change_this'; //Gets the JWT secret from the environment variable.If not set, uses 'fallback_secret_change_this' as default.
         $days   = (int)($_ENV['JWT_EXPIRY_DAYS'] ?? 7);
         $now    = time();
 
-        $payload = [
+        $payload = array_merge($payload, [
             'iss'         => 'dentilmeet',        // issuer (your app name)
             'iat'         => time(),               // issued at
-            'exp'         => time() + (60 * 60 * 24 * 7), // expires in 7 days
-            'id_patient'  => $id_patient,
-            'email'       => $email
-        ];
+            'exp'         => time() + (60 * 60 * 24 * 7) // expires in 7 days
+        ]);
 
         return JWT::encode($payload, $secret, self::$algo);
     }
