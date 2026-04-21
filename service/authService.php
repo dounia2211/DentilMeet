@@ -61,8 +61,13 @@ class AuthService {
         // ── Step 4: Generate JWT token ────────────────────────────────
         // We generate the token right after signup so the patient
         // is automatically logged in — no need to login again after registering.
+
+         $token = TokenUtil::generate([
+            'id_patient' => $id_patient,
+            'email'      => $email,
+            'role'       => 'patient'
+        ]);
         
-        $token = TokenUtil::generate($id_patient, $email);
  
         // ── Step 5: Return success ────────────────────────────────────
         // We return the token and basic patient info.
@@ -113,7 +118,11 @@ class AuthService {
         }
 
         // Step 4: Generate JWT token
-        $token = TokenUtil::generate($patient['id_patient'], $patient['email']);
+         $token = TokenUtil::generate([
+          'id_patient' => $patient['id_patient'],
+         'email'      => $patient['email'],
+         'role'       => 'patient'
+        ]);
 
         // Step 5: Return success
         return [
