@@ -49,8 +49,9 @@ class appointmentService{
     $id_dentist  = $data['id_dentist'] ?? null;
     $date        = $data['appointment_date'] ?? null;
     $time        = $data['appointment_time'] ?? null;
-    $reason      = trim($data['reason'] ?? '');
     $service     = trim($data['service_type'] ?? '');
+    $reason      = trim($data['reason'] ?? '');
+    
     
 
     //step2 validate
@@ -94,8 +95,9 @@ class appointmentService{
       1,
       $date,
       $timeForDB,
-      $reason,
-      $service
+      $service,
+      $reason
+      
     );
 
     if (!$id_appointment){
