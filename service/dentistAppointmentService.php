@@ -82,13 +82,7 @@ class dentistAppointmentService {
             return ['code' => 404, 'body' => ['message' => 'Appointment not found.']];
         }
  
-        // Calculate patient age from birth_date
-        $age = null;
-        if (!empty($appointment['patient_birth_date'])) {
-            $birthDate = new DateTime($appointment['patient_birth_date']);
-            $today     = new DateTime();
-            $age       = $today->diff($birthDate)->y;
-        }
+       
  
         $timeFormatted = date('g:i A', strtotime($appointment['appointment_time']));
  
@@ -107,7 +101,8 @@ class dentistAppointmentService {
                     'full_name'    => $appointment['patient_name'],
                     'phone'        => $appointment['patient_phone'],
                     'email'        => $appointment['patient_email'],
-                    'age'          => $age,
+                     'age'          => $appointment['patient_age'],
+                    'gender'       => $appointment['patient_gender'],
                     'address'      => $appointment['patient_address'],
                 ]
             ]
