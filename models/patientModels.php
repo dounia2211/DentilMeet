@@ -30,12 +30,12 @@ class PatientModel {
     // Returns the auto-generated id_patient of the newly created row.
     // Note: created_at and is_suspended are NOT passed here —
     //       MySQL sets them automatically via DEFAULT NOW() and DEFAULT FALSE.
-    public function create($full_name, $email, $passwordHash, $phone) {
+    public function create($full_name, $email, $passwordHash, $phone, $age, $gender) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO patient (full_name, email, password, phone)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO patient (full_name, email, password, phone, age, gender, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->execute([$full_name, $email, $passwordHash, $phone]);
+        $stmt->execute([$full_name, $email, $passwordHash, $phone, $age, $gender]);
  
         // lastInsertId() returns the id_patient of the row we just inserted
         return $this->pdo->lastInsertId();
