@@ -61,6 +61,21 @@ class validateMiddleware{
                 $errors[] = "The phone number is invalid.";
             }
         }
+
+        // AGE
+        if (!empty($data['age'])) {
+            if (!is_numeric($data['age']))
+                $errors[] = 'Age must be a number.';
+            elseif ((int)$data['age'] < 1 || (int)$data['age'] > 120)
+                $errors[] = 'Age must be between 1 and 120.';
+        }
+
+        // GENDER
+        if (!empty($data['gender'])) {
+            $validGenders = ['male', 'female', 'Male', 'Female', 'M', 'F'];
+            if (!in_array($data['gender'], $validGenders))
+                $errors[] = 'Gender must be male or female.';
+        }
  
         return $errors; // empty array = all good, filled array = stop and send errors
     }
