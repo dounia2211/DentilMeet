@@ -86,6 +86,11 @@ require_once __DIR__ . '/models/dentistAppointmentModel.php';
 require_once __DIR__ . '/service/DentistAppointmentService.php';
 require_once __DIR__ . '/controllers/DentistAppointmentController.php';
 
+//dentistPatientProfile
+require_once __DIR__ . '/models/dentistPatientProfileModel.php';
+require_once __DIR__ . '/service/dentistPatientProfileService.php';
+require_once __DIR__ . '/controllers/dentistPatientProfileController.php';
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -418,6 +423,58 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $dentist    = AuthMiddleware::handleDentist();
     $controller = new DentistAppointmentController($pdo);
     $controller->getAll($dentist);
+
+//  DENTIST PATIENT PROFILE ROUTES
+//  All require dentist token → AuthMiddleware::handleDentist()
+ 
+// GET /api/dentist/patients/:id/profile
+// Called when: dentist opens patient profile page
+// Returns: patient info + anamnesis + my visits + documents (ONE call)
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/profile$#', $uri, $m) && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->getProfile($dentist, (int)$m[1]);
+ 
+// GET /api/dentist/patients/:id/visits/all
+// Called when: dentist clicks "All Visits" tab
+// Returns: visits from ALL dentists for this patient
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/visits/all$#', $uri, $m) && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->getAllVisits($dentist, (int)$m[1]);
+ 
+// GET /api/dentist/patients/:id/payments
+// Called when: dentist clicks "Payments" tab
+// Returns: payments with Paid/Unpaid status, amount, method, related visit
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/payments$#', $uri, $m) && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->getPayments($dentist, (int)$m[1]);
+ 
+// POST /api/dentist/patients/:id/documents
+// Called when: dentist clicks upload icon in Files/Documents
+// Sends: multipart/form-data with file + document_type + notes
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/documents$#', $uri, $m) && $method === 'POST') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->uploadDocument($dentist, (int)$m[1]);
+ 
+// PUT /api/dentist/patients/:id/info
+// Called when: dentist clicks edit icon in General information
+// Body: { "address": "...", "birth_date": "1988-03-15" }
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/info$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->updateGeneralInfo($dentist, (int)$m[1]);
+ 
+// PUT /api/dentist/patients/:id/price
+// Called when: dentist types price and clicks Save button
+// Body: { "id_appointment": 1, "price": 4000 }
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/price$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->updatePrice($dentist, (int)$m[1]);
+
+// PUT /api/dentist/patients/:id/anamnesis
+// Called when dentist edits medical conditions, medications, allergies, surgical history
+} elseif (preg_match('#^/api/dentist/patients/(\d+)/anamnesis$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistPatientProfileController($pdo))->updateAnamnesis($dentist, (int)$m[1]);
+    
 } else {
     http_response_code(404);
     echo json_encode(['message' => 'Route not found.']);
