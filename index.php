@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');        // allow React to call your API
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Methods: POST, GET,PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Handle preflight request from React
@@ -56,7 +56,7 @@ require_once 'models/paymentModel.php';
 require_once 'service/paymentService.php';
 require_once 'controllers/paymentController.php';
 
-// ── Profile
+//Profile
 require_once 'models/profileModel.php';
 require_once 'service/profileService.php';
 require_once 'controllers/profileController.php';
@@ -90,6 +90,16 @@ require_once __DIR__ . '/controllers/DentistAppointmentController.php';
 require_once __DIR__ . '/models/dentistPatientProfileModel.php';
 require_once __DIR__ . '/service/dentistPatientProfileService.php';
 require_once __DIR__ . '/controllers/dentistPatientProfileController.php';
+
+//DENTIST NOTIFICATIONS
+require_once 'models/dentistNotificationModel.php';
+require_once 'service/dentistNotificationService.php';
+require_once 'controllers/dentistNotificationController.php';
+
+//dentistMessage
+require_once 'models/dentistMessageModel.php';
+require_once 'service/dentistMessageService.php';
+require_once 'controllers/dentistMessageController.php';
 
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -474,6 +484,66 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
 } elseif (preg_match('#^/api/dentist/patients/(\d+)/anamnesis$#', $uri, $m) && $method === 'PUT') {
     $dentist = AuthMiddleware::handleDentist();
     (new DentistPatientProfileController($pdo))->updateAnamnesis($dentist, (int)$m[1]);
+
+//  DENTIST AUTH ROUTES 
+ 
+// POST /api/dentist/auth/signup
+// Receives: multipart/form-data (has file uploads)
+// No token needed — dentist is not logged in yet
+} elseif ($uri === '/api/dentist/auth/signup' && $method === 'POST') {
+    $controller = new DentistAuthController($pdo);
+    $controller->signup();
+ 
+// POST /api/dentist/auth/login
+// No token needed — dentist is not logged in yet
+} elseif ($uri === '/api/dentist/auth/login' && $method === 'POST') {
+    $controller = new DentistAuthController($pdo);
+    $controller->login();
+
+
+// DENTIST NOTIFICATION
+// GET /api/dentist/notifications
+} elseif ($uri === '/api/dentist/notifications' && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistNotificationController($pdo))->getAll($dentist);
+
+// GET /api/dentist/notifications/unread-count
+} elseif ($uri === '/api/dentist/notifications/unread-count' && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistNotificationController($pdo))->getUnreadCount($dentist);
+
+// PUT /api/dentist/notifications/{id}/read
+} elseif (preg_match('#^/api/dentist/notifications/(\d+)/read$#', $uri, $m) && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistNotificationController($pdo))->markAsRead($dentist, (int)$m[1]);
+
+// PUT /api/dentist/notifications/read-all
+} elseif ($uri === '/api/dentist/notifications/read-all' && $method === 'PUT') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistNotificationController($pdo))->markAllAsRead($dentist);
+
+// DELETE /api/dentist/notifications/{id}
+} elseif (preg_match('#^/api/dentist/notifications/(\d+)$#', $uri, $m) && $method === 'DELETE') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistNotificationController($pdo))->delete($dentist, (int)$m[1]);
+
+//DENTIST MESSAGE
+
+// GET /api/dentist/messages  — liste conversations
+} elseif ($uri === '/api/dentist/messages' && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistMessageController($pdo))->getConversations($dentist);
+
+// GET /api/dentist/messages/{id_patient}  — messages + patient details
+} elseif (preg_match('#^/api/dentist/messages/(\d+)$#', $uri, $m) && $method === 'GET') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistMessageController($pdo))->getMessages($dentist, (int)$m[1]);
+
+// POST /api/dentist/messages/send
+} elseif ($uri === '/api/dentist/messages/send' && $method === 'POST') {
+    $dentist = AuthMiddleware::handleDentist();
+    (new DentistMessageController($pdo))->send($dentist);
+
     
 } else {
     http_response_code(404);
