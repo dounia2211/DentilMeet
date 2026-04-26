@@ -47,8 +47,11 @@ class ProfileService {
                 'id_patient' => $patient['id_patient'],
                 'full_name'  => $patient['full_name'],
                 'email'      => $patient['email'],
-                'phone'      => $patient['phone'],       // affiché comme "Number" dans le design
+                'phone'      => $patient['phone'],      
                 'photo'      => $patient['photo'],
+                'age'        => $patient['age'],
+                'gender'     => $patient['gender'],
+                'address'    => $patient['address'],
 
                 // ── Bloc Anamnesis (haut droite)
                 'anamnesis' => [
