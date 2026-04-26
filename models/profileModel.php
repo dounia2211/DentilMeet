@@ -19,7 +19,11 @@ class ProfileModel {
                 p.full_name,
                 p.email,
                 p.phone,
-                p.photo
+                p.photo,
+                p.address,
+                p.gender,
+                p.birth_date,
+                TIMESTAMPDIFF(YEAR, p.birth_date, CURDATE()) AS age
             FROM patient p
             WHERE p.id_patient = ?
             LIMIT 1
