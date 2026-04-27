@@ -32,6 +32,15 @@ class DentistMessageService {
         if (empty($text))   return ['code' => 400, 'body' => ['message' => 'message_text required.']];
         if (strlen($text) > 2000) return ['code' => 400, 'body' => ['message' => 'message_text too long.']];
         $id = $this->m->send($dentistId, $patientId, $text);
+        // Notif patient : "You have a new message from Dr. Ahmed"
+    $dentistName = $this->m->getDentistName($dentistId); 
+    require_once __DIR__ . '/../service/notificationService.php';
+    $notifPatient = new notificationService($this->pdo);
+    $notifPatient->createDentistMessageNotification(
+        $patientId,
+        $dentistName,
+        $dentistId
+    );
         return ['code' => 201, 'body' => ['message' => 'Sent.', 'id_message' => $id]];
     }
 }
