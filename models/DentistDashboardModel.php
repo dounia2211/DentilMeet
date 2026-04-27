@@ -1,66 +1,6 @@
 <?php
 declare(strict_types=1);
-
-// ============================================================
 //  dentistDashboardModel.php
-//
-//  Variables retournées = exactement ce qu'utilise Dentaldash.tsx
-//
-//  ┌─────────────────────────────────────────────────────────┐
-//  │  STAT CARDS (ligne 495-498)                             │
-//  │  <StatCard label="Clinic Status"     value="Available"  │
-//  │  <StatCard label="Patients Seen Today" value="021"      │
-//  │  <StatCard label="Today's Patients"  value="40"         │
-//  │  <StatCard label="Total Patients"    value="+200"       │
-//  │  → clinic_status, patients_seen_today,                  │
-//  │    todays_patients, total_patients                      │
-//  ├─────────────────────────────────────────────────────────┤
-//  │  UPCOMING APPOINTMENTS (ligne 167-170)                  │
-//  │  { name: "Full Name", time: "on going", live: true }    │
-//  │  { name: "Full Name", time: "12:30 pm" }                │
-//  │  → appointments[].name, appointments[].time,            │
-//  │    appointments[].live (bool)                           │
-//  ├─────────────────────────────────────────────────────────┤
-//  │  NEXT PATIENT (ligne 243-271)                           │
-//  │  full name : .....   Age : 38                           │
-//  │  Gender :            Time : 11:00 pm                    │
-//  │  Reason : Teeth whitening                               │
-//  │  visit type : ...visit type: ...                        │
-//  │  Allergies :         Medical nots :                     │
-//  │  Status : confirmed / Pending                           │
-//  │  Due Payment : 1,2000 DA                                │
-//  │  → next_patient.full_name, .age, .gender, .time,        │
-//  │    .reason, .visit_type, .allergies,                    │
-//  │    .medical_notes, .status, .due_payment                │
-//  ├─────────────────────────────────────────────────────────┤
-//  │  APPOINTMENT REQUESTS (ligne 342-343)                   │
-//  │  { name: "Name", type: "Visit type" }                   │
-//  │  → requests[].name, requests[].type                     │
-//  ├─────────────────────────────────────────────────────────┤
-//  │  PATIENTS REVIEW (ligne 391)                            │
-//  │  ["Excellent",19],["Great",26],["Good",27],["Average",28]│
-//  │  → review.Excellent, .Great, .Good, .Average (%)        │
-//  ├─────────────────────────────────────────────────────────┤
-//  │  CALENDAR (ligne 437)                                   │
-//  │  "Mars 2026" → month/year                               │
-//  │  cell.n=day, cell.h=has_appt, cell.t=today, cell.m=other│
-//  │  → calendar[row][col].n .h .t .m                        │
-//  └─────────────────────────────────────────────────────────┘
-//
-//  TABLES DB :
-//    dentist      → id_dentist, clinic_status, full_name
-//    appointment  → id_appointment, appointment_date, appointment_time,
-//                   appointment_status, reason, service_type, total_price,
-//                   id_patient, id_dentist
-//    patient      → id_patient, full_name, birth_date, photo
-//    review       → id_review, rating, is_reported, id_dentist
-//    chat_message → receiver_id, is_read, sender_type
-//
-//  ⚠️  SQL À LANCER UNE SEULE FOIS :
-//  ALTER TABLE `dentist`
-//    ADD COLUMN `clinic_status`
-//      ENUM('Available','Busy','Offline') NOT NULL DEFAULT 'Available';
-// ============================================================
 
 class DentistDashboardModel {
 
@@ -69,15 +9,6 @@ class DentistDashboardModel {
     public function __construct($pdo) {
         $this->pdo = $pdo;
     }
-
-    // ══════════════════════════════════════════════════════
-    //  STAT CARDS
-    //  Dentaldash.tsx ligne 495-498 :
-    //    value="Available"  → clinic_status
-    //    value="021"        → patients_seen_today
-    //    value="40"         → todays_patients
-    //    value="+200"       → total_patients
-    // ══════════════════════════════════════════════════════
 
     // clinic_status → "Available" | "Busy" | "Offline"
     // DB : dentist.clinic_status
@@ -134,14 +65,7 @@ class DentistDashboardModel {
     }
 
     // ══════════════════════════════════════════════════════
-    //  UPCOMING APPOINTMENTS
-    //  Dentaldash.tsx ligne 167-170 :
-    //    { name: "Full Name", time: "on going", live: true }
-    //    { name: "Full Name", time: "12:30 pm" }
-    //  → appointments[].name  = patient.full_name
-    //  → appointments[].time  = appointment_time formatté "h:i am/pm"
-    //                           ou "on going" si c'est le 1er confirme
-    //  → appointments[].live  = true si c'est le 1er (on going)
+    //  UPCOMING APPOINTMENT
     // ══════════════════════════════════════════════════════
 
     public function getUpcomingAppointments(int $dentistId): array {
@@ -179,17 +103,6 @@ class DentistDashboardModel {
 
     // ══════════════════════════════════════════════════════
     //  NEXT PATIENT DETAILS
-    //  Dentaldash.tsx ligne 243-271 :
-    //    full name : .....  → next_patient.full_name
-    //    Age : 38           → next_patient.age
-    //    Gender :           → next_patient.gender  (null en DB)
-    //    Time : 11:00 pm    → next_patient.time
-    //    Reason : Teeth whitening → next_patient.reason
-    //    visit type : ...   → next_patient.visit_type
-    //    Allergies :        → next_patient.allergies  (null en DB)
-    //    Medical nots :     → next_patient.medical_notes (null en DB)
-    //    Status : confirmed / Pending → next_patient.status
-    //    Due Payment : 1,2000 DA → next_patient.due_payment
     // ══════════════════════════════════════════════════════
 
     public function getNextPatient(int $dentistId): array|false {
@@ -225,11 +138,7 @@ class DentistDashboardModel {
     }
 
     // ══════════════════════════════════════════════════════
-    //  APPOINTMENT REQUESTS
-    //  Dentaldash.tsx ligne 342-343 :
-    //    { name: "Name", type: "Visit type" }
-    //  → requests[].name = patient.full_name
-    //  → requests[].type = appointment.service_type
+    //  APPOINTMENT REQUEST
     // ══════════════════════════════════════════════════════
 
     public function getAppointmentRequests(int $dentistId): array {
@@ -274,14 +183,6 @@ class DentistDashboardModel {
 
     // ══════════════════════════════════════════════════════
     //  PATIENTS REVIEW
-    //  Dentaldash.tsx ligne 391 :
-    //    ["Excellent",19],["Great",26],["Good",27],["Average",28]
-    //  Le front attend : un tableau [label, pourcentage%]
-    //  → review.Excellent = % des notes = 5
-    //  → review.Great     = % des notes = 4
-    //  → review.Good      = % des notes = 3
-    //  → review.Average   = % des notes <= 2
-    //  DB : review.rating, review.is_reported, review.id_dentist
     // ══════════════════════════════════════════════════════
 
     public function getReviewStats(int $dentistId): array {
@@ -317,14 +218,6 @@ class DentistDashboardModel {
 
     // ══════════════════════════════════════════════════════
     //  CALENDAR
-    //  Dentaldash.tsx ligne 405-425 :
-    //    CAL = tableau de semaines, chaque cellule :
-    //    { n: day_number, h: has_appointment, t: is_today, m: other_month }
-    //  → calendar[].n  = numéro du jour
-    //  → calendar[].h  = true si RDV ce jour (surlignage vert clair)
-    //  → calendar[].t  = true si aujourd'hui (fond vert plein)
-    //  → calendar[].m  = true si jour d'un autre mois (grisé)
-    //  DB : appointment.appointment_date, id_dentist, appointment_status
     // ══════════════════════════════════════════════════════
 
     public function getCalendarData(int $dentistId, int $year, int $month): array {
@@ -388,10 +281,6 @@ class DentistDashboardModel {
 
     // ══════════════════════════════════════════════════════
     //  PATIENT TRENDS (graphique)
-    //  Dentaldash.tsx : TrendChart — axes Jan/Feb/Mar
-    //  → trends[].date  = "2026-01-15"
-    //  → trends[].count = nombre de RDV ce jour
-    //  DB : appointment.appointment_date, id_dentist
     // ══════════════════════════════════════════════════════
 
     public function getPatientTrends(int $dentistId, int $days = 90): array {
@@ -486,5 +375,26 @@ class DentistDashboardModel {
         ");
         $stmt->execute([$dentistId]);
         return (int) $stmt->fetchColumn();
+    }
+    // Utilisé par DentistDashboardService::acceptRequest() et refuseRequest()
+    // Pour récupérer patient_name, dentist_name, date, time
+    public function getAppointmentById(int $appointmentId): array|false {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                a.id_appointment,
+                a.appointment_date,
+                a.appointment_time,
+                a.id_patient,
+                a.id_dentist,
+                p.full_name AS patient_name,
+                d.full_name AS dentist_name
+                FROM appointment a
+            JOIN patient p ON a.id_patient = p.id_patient
+            JOIN dentist  d ON a.id_dentist = d.id_dentist
+            WHERE a.id_appointment = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$appointmentId]);
+        return $stmt->fetch();
     }
 }
