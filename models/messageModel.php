@@ -1,11 +1,6 @@
 <?php
 declare(strict_types=1);
 
-// ✅ La table `chat_message` EXISTE déjà dans votre SQL avec ces colonnes :
-//    id_message, message_text, sent_at, is_read,
-//    sender_type ENUM('patient','dentiste'),
-//    sender_id, receiver_id, id_appointment (nullable)
-
 class MessageModel {
 
     private $pdo;
@@ -84,5 +79,14 @@ class MessageModel {
         ");
         $stmt->execute([$patientId, $patientId]);
         return $stmt->fetchAll();
+    }
+      // Utilisé par messageService::send() pour notifier le dentiste
+    public function getPatientName(int $patientId): string {
+        $stmt = $this->pdo->prepare("
+            SELECT full_name FROM patient WHERE id_patient = ? LIMIT 1
+        ");
+        $stmt->execute([$patientId]);
+        $row = $stmt->fetch();
+        return $row ? $row['full_name'] : 'Unknown';
     }
 }
