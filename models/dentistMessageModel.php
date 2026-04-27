@@ -114,4 +114,13 @@ class DentistMessageModel {
         $stmt->execute([$patientId, $dentistId]);
         return $stmt->fetch();
     }
+     // Utilisé par dentistMessageService::send() pour notifier le patient
+    public function getDentistName(int $dentistId): string {
+        $stmt = $this->pdo->prepare("
+            SELECT full_name FROM dentist WHERE id_dentist = ? LIMIT 1
+        ");
+        $stmt->execute([$dentistId]);
+        $row = $stmt->fetch();
+        return $row ? $row['full_name'] : 'Unknown';
+    }
 }
