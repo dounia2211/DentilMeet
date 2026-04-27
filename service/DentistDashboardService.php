@@ -197,12 +197,51 @@ class DentistDashboardService {
     public function acceptRequest(int $dentistId, int $appointmentId): array {
         $ok = $this->m->acceptRequest($appointmentId, $dentistId);
         if (!$ok) return ['code' => 404, 'body' => ['message' => 'Request not found.']];
+
+          // Récupère les infos du RDV pour le message
+    $appt = $this->m->getAppointmentById($appointmentId); 
+    if ($appt) {
+    require_once __DIR__ . '/../models/dentistNotificationModel.php';
+    $dentistNotif = new DentistNotificationModel($this->pdo);
+    $dentistNotif->createConfirmedNotif(
+    $dentistId,
+    $appt['patient_name'],
+    $appt['appointment_date'], 
+    $appt['appointment_time']  
+);
+
+
+    // "Your appointment has been confirmed"
+    require_once __DIR__ . '/../service/notificationService.php';
+    $notifPatient = new notificationService($this->pdo);
+    $notifPatient->createConfirmationByDentistNotification(
+        (int)$appt['id_patient'],
+        $appt['dentist_name'],
+        $appt['appointment_date'],
+        $appt['appointment_time'],
+        $dentistId
+    );
+    }
+        
         return ['code' => 200, 'body' => ['message' => 'Appointment confirmed.']];
     }
 
     public function refuseRequest(int $dentistId, int $appointmentId): array {
         $ok = $this->m->refuseRequest($appointmentId, $dentistId);
         if (!$ok) return ['code' => 404, 'body' => ['message' => 'Request not found.']];
+
+          //"Your appointment was not accepted"
+    $appt = $this->m->getAppointmentById($appointmentId);
+
+    require_once __DIR__ . '/../service/notificationService.php';
+    $notifPatient = new notificationService($this->pdo);
+    $notifPatient->createRefusedNotification(
+        (int)$appt['id_patient'],
+        $appt['dentist_name'],
+        $appt['appointment_date'],
+        $dentistId
+    );
+        
         return ['code' => 200, 'body' => ['message' => 'Appointment cancelled.']];
     }
 
