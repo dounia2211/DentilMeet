@@ -74,7 +74,7 @@ class ProfileModel {
                 file_path,
                 file_size_kb,
                 uploaded_at
-            FROM patient_document
+            FROM document
             WHERE id_patient = ?
             ORDER BY uploaded_at DESC
         ");
