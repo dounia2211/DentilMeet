@@ -71,6 +71,14 @@ class PaymentService {
 
         // ── Réponse ───────────────────────────────────────────────────
         if ($success) {
+          require_once __DIR__ . '/../service/notificationService.php';
+    $notifService = new notificationService($this->pdo);
+    $notifService->createPaymentNotification(
+        $patientId,
+        $amount,
+        $method
+    );
+            
             return [
                 'code' => 201,
                 'body' => [
