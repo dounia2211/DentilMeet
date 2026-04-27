@@ -39,6 +39,11 @@ class MessageService {
             $messageText,
             $appointmentId
         );
+        
+                     // Notification dentiste "New Patient Message"
+        require_once __DIR__ . '/../models/dentistNotificationModel.php';
+    $dentistNotif = new DentistNotificationModel($this->pdo);
+    $dentistNotif->createNewMessageNotif($dentistId, $patientName);
 
         return [
             'code' => 201,
