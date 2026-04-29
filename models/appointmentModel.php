@@ -114,5 +114,36 @@ class appointmentModel{
         return array_column($stmt->fetchAll(), 'time');
     }
 
-    
+    // pour avoir le nom du patient dans la notif dentiste
+    public function getPatientName(int $patientId): string {
+        $stmt = $this->pdo->prepare("
+            SELECT full_name FROM patient WHERE id_patient = ? LIMIT 1
+        ");
+        $stmt->execute([$patientId]);
+        $row = $stmt->fetch();
+        return $row ? $row['full_name'] : 'Unknown';
+    }
+
+    // findById() existe déjà mais ne retourne pas id_dentist
+    // donc on ajoute getById() avec id_dentist
+    public function getById(int $appointmentId): array|false {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                a.id_appointment,
+                a.appointment_date,
+                a.appointment_time,
+                a.id_dentist,
+                a.id_patient,
+                p.full_name AS patient_name,
+                d.full_name AS dentist_name
+            FROM appointment a
+            JOIN patient p ON a.id_patient  = p.id_patient
+            JOIN dentist  d ON a.id_dentist = d.id_dentist
+            WHERE a.id_appointment = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$appointmentId]);
+        return $stmt->fetch();
+    }
+ 
 } 
