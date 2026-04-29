@@ -64,28 +64,7 @@ class dentistPatientProfileController{
         http_response_code($result['code']);
         echo json_encode($result['body']);
     }
- 
-    // PUT /api/dentist/patients/:id/info
-    // Edit icon in General information section
-    // Body: { "address": "...", "birth_date": "1988-03-15" }
-    public function updateGeneralInfo($dentist, $id_patient) {
-        $data = json_decode(file_get_contents('php://input'), true);
- 
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode(['message' => 'Invalid request body.']);
-            return;
-        }
- 
-        $result = $this->service->updateGeneralInfo(
-            $id_patient,
-            $dentist['id_dentist'],
-            $data
-        );
-        http_response_code($result['code']);
-        echo json_encode($result['body']);
-    }
- 
+
     // PUT /api/dentist/patients/:id/price
     // Price field + Save button at bottom
     // Body: { "id_appointment": 1, "price": 4000 }
