@@ -26,7 +26,7 @@ class AuthService {
         $email    = strtolower(trim($data['email'])); // normalize email to lowercase
         $password = $data['password'];
         $phone    = !empty(trim($data['phone'] ?? '')) ? trim($data['phone']) : null;
-        $age    = !empty($data['age'])    ? (int) $data['age']       : null;
+        $birth_date    = !empty($data['birth_date'])    ?  $data['birth_date']       : null;
         $gender = !empty($data['gender']) ? trim($data['gender'])    : null;
         // phone is optional — if empty we store NULL in the DB
  
@@ -50,7 +50,7 @@ class AuthService {
             $email,
             $passwordHash,
             $phone,
-            $age,
+            $birth_date,
             $gender
         );
  
@@ -86,7 +86,7 @@ class AuthService {
                     'full_name'  => $full_name,
                     'email'      => $email,
                     'phone'      => $phone,
-                    'age'        => $age,      
+                    'birth_date'        => $birth_date,      
                     'gender'     => $gender
                 ]
             ]
