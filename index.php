@@ -15,6 +15,7 @@ require_once 'config/database.php';
 require_once 'utils/tokenUtil.php';
 require_once 'middlewares/validateMiddlewares.php';
 require_once 'middlewares/authMiddlewares.php';
+require_once 'middlewares/adminMiddlewares.php';
 
 // ── Auth 
 require_once 'models/patientModels.php';
@@ -100,6 +101,11 @@ require_once 'controllers/dentistNotificationController.php';
 require_once 'models/dentistMessageModel.php';
 require_once 'service/dentistMessageService.php';
 require_once 'controllers/dentistMessageController.php';
+
+//admin login
+require_once __DIR__ . '/models/adminModel.php';
+require_once __DIR__ . '/service/adminService.php';
+require_once __DIR__ . '/controllers/adminController.php';
 
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -465,13 +471,6 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $dentist = AuthMiddleware::handleDentist();
     (new DentistPatientProfileController($pdo))->uploadDocument($dentist, (int)$m[1]);
  
-// PUT /api/dentist/patients/:id/info
-// Called when: dentist clicks edit icon in General information
-// Body: { "address": "...", "birth_date": "1988-03-15" }
-} elseif (preg_match('#^/api/dentist/patients/(\d+)/info$#', $uri, $m) && $method === 'PUT') {
-    $dentist = AuthMiddleware::handleDentist();
-    (new DentistPatientProfileController($pdo))->updateGeneralInfo($dentist, (int)$m[1]);
- 
 // PUT /api/dentist/patients/:id/price
 // Called when: dentist types price and clicks Save button
 // Body: { "id_appointment": 1, "price": 4000 }
@@ -544,6 +543,11 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $dentist = AuthMiddleware::handleDentist();
     (new DentistMessageController($pdo))->send($dentist);
 
+//Admin login  
+// POST /api/admin/auth/login
+} elseif($uri = '/api/admin/auth/login' && $method = 'POST') {
+    $controller = new adminController($pdo);
+    $controller ->login(); 
     
 } else {
     http_response_code(404);
