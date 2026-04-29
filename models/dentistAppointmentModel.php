@@ -111,7 +111,7 @@ class dentistAppointmentModel{
                 p.full_name   AS patient_name,
                 p.phone  AS patient_phone,
                 p.email  AS patient_email,
-                 p.age   AS patient_age,
+                p.birth_date   AS patient_birth_date,
                 p.gender AS patient_gender,
                 p.address      AS patient_address
             FROM appointment a
