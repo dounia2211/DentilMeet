@@ -15,7 +15,7 @@ class dentistPatientProfileModel {
             p.full_name,
             p.phone,
             p.email,
-            p.age,
+            p.birth_date,
             p.gender,
             p.address,
             p.medical_conditions,
@@ -156,28 +156,6 @@ class dentistPatientProfileModel {
             $id_appointment
         ]);
         return $this->pdo->lastInsertId();
-    }
-
-    //updateGeneralInfo()
-    //Used by: edit icon in General information section
-    public function updateGeneralInfo($id_patient, $id_dentist, $address, $age, $gender) {
-        // Security check first
-        $check = $this->pdo->prepare("
-            SELECT COUNT(*) as total FROM appointment
-            WHERE id_patient = ? AND id_dentist = ?
-        ");
-        $check->execute([$id_patient, $id_dentist]);
-        if (!(int)$check->fetch()['total']) return 0;
- 
-        $stmt = $this->pdo->prepare("
-            UPDATE patient
-            SET address    = ?,
-                age        = ?,
-               gender     = ?
-            WHERE  id_patient = ?
-        ");
-        $stmt->execute([$address,$age, $gender, $id_patient]);
-        return $stmt->rowCount();
     }
 
     // updateAppointmentPrice()
