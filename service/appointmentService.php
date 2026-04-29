@@ -118,6 +118,18 @@ class appointmentService{
         $timeForDB,            // "10:00:00"
         $id_dentist
       );
+
+     // Notif dentiste
+      require_once __DIR__ . '/../models/dentistNotificationModel.php';
+        $dentistNotif = new DentistNotificationModel($this->pdo);
+        $patientName  = $this->appointmentModel->getPatientName($id_patient);
+        $dentistNotif->createAppointmentRequestNotif(
+            (int)$id_dentist,
+            $patientName,
+            $date,
+            $time  
+        );
+     
     }
 
     //step6 return success
@@ -156,6 +168,15 @@ class appointmentService{
       $id_patient,
       $appointment['appointment_date'],  // "2026-04-06"
       $appointment['id_dentist'] ?? null
+    );
+
+     // Notif dentiste 
+    require_once __DIR__ . '/../models/dentistNotificationModel.php';
+    $dentistNotif = new DentistNotificationModel($this->pdo);
+    $patientName  = $this->appointmentModel->getPatientName($id_patient);
+    $dentistNotif->createCancelledNotif(
+        (int)$appointment['id_dentist'],
+        $patientName
     );
     
     return [
