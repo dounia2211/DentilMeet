@@ -28,7 +28,14 @@ class dentistPatientProfileService {
             ];
         }
 
-    
+         // Calculate age from birth_date
+        // birth_date format in DB: "1988-03-15"
+        $age = null;
+        if (!empty($patient['birth_date']) && $patient['birth_date'] !== '0000-00-00') {
+            $birth = new DateTime($patient['birth_date']);
+            $today = new DateTime();
+            $age   = $today->diff($birth)->y;
+        }
  
         // Get my visits (this dentist only)
         $myVisits = $this->model->getMyVisits($id_patient, $id_dentist);
@@ -67,7 +74,8 @@ class dentistPatientProfileService {
                     'phone'      => $patient['phone'],
                     'email'      => $patient['email'],
                     'address'    => $patient['address'],
-                    'age'        => $patient['age'],
+                    'birth_date' => $patient['birth_date'],
+                    'age'        => $age,
                     'gender'     => $patient['gender']
                 ],
                 // Anamnesis not in your DB 
@@ -235,35 +243,7 @@ class dentistPatientProfileService {
         ];
     }
 
-    // updateGeneralInfo()
-    // Route: PUT /api/dentist/patients/:id/info
-    // Called when: dentist clicks edit icon in General information
-    public function updateGeneralInfo($id_patient, $id_dentist, $data) {
-
-        $patient = $this->model->getPatientInfo($id_patient, $id_dentist);
-        if (!$patient) {
-         return ['code' => 404, 'body' => ['message' => 'Patient not found.']];
-        }
- 
-        $address    = $data['address']   ?? $patient['address'];
-        $age        = $data['age']        ?? $patient['age'];      
-        $gender     = $data['gender']     ?? $patient['gender'];     
- 
-        $updated = $this->model->updateGeneralInfo(
-            $id_patient,
-            $id_dentist,
-            $address    ?: null,
-            $age,
-            $gender
-        );
- 
-        if (!$updated) {
-            return ['code' => 404, 'body' => ['message' => 'Patient not found or update failed.']];
-        }
- 
-        return ['code' => 200, 'body' => ['message' => 'Patient information updated.']];
-    }
-
+    
     // updatePrice()
     // Route: PUT /api/dentist/patients/:id/price
     // Called when: dentist types price and clicks Save button
