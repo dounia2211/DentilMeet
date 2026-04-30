@@ -308,7 +308,22 @@ class validateMiddleware{
    public static function validatePatientId(int $id): array {
     return $id <= 0 ? ['Invalid patient id.'] : [];
 }
-
+             
+   public static function validateAdminLogin(array $data): array {
+    $errors = [];
+ 
+    if (empty(trim($data['email'] ?? ''))) {
+        $errors[] = 'Email is required.';
+    } elseif (!filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Invalid email format.';
+    }
+ 
+    if (empty($data['password'] ?? '')) {
+        $errors[] = 'Password is required.';
+    }
+ 
+    return $errors;
+}
   // ── Helper respond() ───────────────────────────────────
    public static function respond(array $errors): bool {
     if (!empty($errors)) {
