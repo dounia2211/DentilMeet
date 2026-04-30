@@ -543,12 +543,73 @@ if ($uri === '/api/auth/signup' && $method === 'POST') {
     $dentist = AuthMiddleware::handleDentist();
     (new DentistMessageController($pdo))->send($dentist);
 
-//Admin login  
-// POST /api/admin/auth/login
-} elseif($uri = '/api/admin/auth/login' && $method = 'POST') {
-    $controller = new adminController($pdo);
-    $controller ->login(); 
+//  ADMIN AUTH
+
+} elseif ($uri === '/api/admin/login' && $method === 'POST') {
+    (new AdminController($pdo))->login();
+ 
+//  ADMIN DASHBOARD
+ 
+} elseif ($uri === '/api/admin/dashboard' && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getDashboard($admin);
+
+//  ADMIN USER MANAGEMENT — TABS
+
+// GET /api/admin/users?search=Ahmed  — All Users tab
+} elseif ($uri === '/api/admin/users' && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getAllUsers($admin);
+ 
+// GET /api/admin/users/pending  — Pending Requests tab
+} elseif ($uri === '/api/admin/users/pending' && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getPendingRequests($admin);
+ 
+// GET /api/admin/users/dentists?search=Ahmed  — Dentists tab
+} elseif ($uri === '/api/admin/users/dentists' && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getDentists($admin);
+ 
+// GET /api/admin/users/patients?search=Youcef  — Patients tab
+} elseif ($uri === '/api/admin/users/patients' && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getPatients($admin);
+
+//  ADMIN ACTIONS — Approve / Reject / Suspend
     
+// PUT /api/admin/dentists/{id}/approve  — bouton Approve
+} elseif (preg_match('#^/api/admin/dentists/(\d+)/approve$#', $uri, $m) && $method === 'PUT') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->approveDentist($admin, (int)$m[1]);
+ 
+// PUT /api/admin/dentists/{id}/reject  — bouton Reject
+} elseif (preg_match('#^/api/admin/dentists/(\d+)/reject$#', $uri, $m) && $method === 'PUT') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->rejectDentist($admin, (int)$m[1]);
+ 
+// PUT /api/admin/patients/{id}/suspend  — bouton Suspend patient
+} elseif (preg_match('#^/api/admin/patients/(\d+)/suspend$#', $uri, $m) && $method === 'PUT') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->suspendPatient($admin, (int)$m[1]);
+ 
+// PUT /api/admin/dentists/{id}/suspend  — bouton Suspend dentiste
+} elseif (preg_match('#^/api/admin/dentists/(\d+)/suspend$#', $uri, $m) && $method === 'PUT') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->suspendDentist($admin, (int)$m[1]);
+
+//  ADMIN VIEW DETAILS
+
+// GET /api/admin/dentists/{id}  — view Details dentiste
+} elseif (preg_match('#^/api/admin/dentists/(\d+)$#', $uri, $m) && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getDentistDetails($admin, (int)$m[1]);
+ 
+// GET /api/admin/patients/{id}  — view Details patient
+} elseif (preg_match('#^/api/admin/patients/(\d+)$#', $uri, $m) && $method === 'GET') {
+    $admin = AuthMiddleware::handleAdmin();
+    (new AdminController($pdo))->getPatientDetails($admin, (int)$m[1]);
+
 } else {
     http_response_code(404);
     echo json_encode(['message' => 'Route not found.']);
