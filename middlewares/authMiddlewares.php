@@ -62,5 +62,34 @@ class AuthMiddleware { // protect future routes with the token
 
         return $decoded;
      }
+
+        public static function handleAdmin(): array {
+        $headers    = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+ 
+        if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
+            http_response_code(401);
+            echo json_encode(['message' => 'Token admin manquant.']);
+            exit;
+        }
+ 
+        $token   = substr($authHeader, 7);
+        $decoded = TokenUtil::verify($token);
+ 
+        if (!$decoded || !isset($decoded['id_admin'])) {
+            http_response_code(401);
+            echo json_encode(['message' => 'Token admin invalide.']);
+            exit;
+        }
+ 
+        // Vérifie le rôle dans le token
+        if (($decoded['role'] ?? '') !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['message' => 'Accès refusé. Réservé aux administrateurs.']);
+            exit;
+        }
+ 
+        return $decoded;
+    }
                       
      }
